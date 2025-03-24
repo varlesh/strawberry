@@ -68,7 +68,7 @@ QPixmap SystemTrayIcon::CreateIcon(const QPixmap &icon, const QPixmap &grey_icon
     int height = rect.height() / 2;
     QPixmap scaled(current_state_icon_.scaledToHeight(height, Qt::SmoothTransformation));
 
-    QRect state_rect(rect.width() - scaled.width(), 0, scaled.width(), scaled.height());
+    QRect state_rect(0, 0, scaled.width(), scaled.height());
     p.drawPixmap(state_rect, scaled);
   }
 

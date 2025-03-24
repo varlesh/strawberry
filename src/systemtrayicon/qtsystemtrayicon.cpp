@@ -39,8 +39,8 @@ using namespace Qt::Literals::StringLiterals;
 SystemTrayIcon::SystemTrayIcon(QObject *parent)
     : QSystemTrayIcon(parent),
       menu_(new QMenu),
-      pixmap_playing_(u":/pictures/tiny-play.png"_s),
-      pixmap_paused_(u":/pictures/tiny-pause.png"_s),
+      
+      
       action_play_pause_(nullptr),
       action_stop_(nullptr),
       action_stop_after_this_track_(nullptr),
@@ -49,15 +49,19 @@ SystemTrayIcon::SystemTrayIcon(QObject *parent)
       available_(false),
       trayicon_progress_(false),
       song_progress_(0) {
+const QIcon tiny_start = IconLoader::Load(u"strwbr-play-symbolic"_s);
+const QIcon tiny_pause = IconLoader::Load(u"strwbr-pause-symbolic"_s);
+pixmap_playing_ = tiny_start.pixmap(22, QIcon::Normal);
+pixmap_paused_ = tiny_pause.pixmap(22, QIcon::Normal);
 
-  const QIcon icon = IconLoader::Load(u"strawberry"_s);
+  const QIcon icon = IconLoader::Load(u"strwbr-tray-symbolic"_s);
   const QIcon icon_grey = IconLoader::Load(u"strawberry-grey"_s);
-  pixmap_normal_ = icon.pixmap(48, QIcon::Normal);
+  pixmap_normal_ = icon.pixmap(22, QIcon::Normal);
   if (icon_grey.isNull()) {
-    pixmap_grey_ = icon.pixmap(48, QIcon::Disabled);
+    pixmap_grey_ = icon.pixmap(22, QIcon::Disabled);
   }
   else {
-    pixmap_grey_ = icon_grey.pixmap(48, QIcon::Disabled);
+    pixmap_grey_ = icon_grey.pixmap(22, QIcon::Disabled);
   }
 
   if (isSystemTrayAvailable()) {

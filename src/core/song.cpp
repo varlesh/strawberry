@@ -1114,18 +1114,18 @@ Song::Source Song::SourceFromText(const QString &source) {
 QIcon Song::IconForSource(const Source source) {
 
   switch (source) {
-    case Source::LocalFile:     return IconLoader::Load(u"folder-sound"_s);
-    case Source::Collection:    return IconLoader::Load(u"library-music"_s);
-    case Source::CDDA:          return IconLoader::Load(u"media-optical"_s);
-    case Source::Device:        return IconLoader::Load(u"device"_s);
-    case Source::Stream:        return IconLoader::Load(u"applications-internet"_s);
-    case Source::Subsonic:      return IconLoader::Load(u"subsonic"_s);
-    case Source::Tidal:         return IconLoader::Load(u"tidal"_s);
-    case Source::Spotify:       return IconLoader::Load(u"spotify"_s);
-    case Source::Qobuz:         return IconLoader::Load(u"qobuz"_s);
-    case Source::SomaFM:        return IconLoader::Load(u"somafm"_s);
-    case Source::RadioParadise: return IconLoader::Load(u"radioparadise"_s);
-    case Source::Unknown:       return IconLoader::Load(u"edit-delete"_s);
+    case Source::LocalFile:     return IconLoader::Load(u"new-audio-alarm-symbolic"_s);
+    case Source::Collection:    return IconLoader::Load(u"new-audio-alarm-symbolic"_s);
+    case Source::CDDA:          return IconLoader::Load(u"media-optical-symbolic"_s);
+    case Source::Device:        return IconLoader::Load(u"drive-removable-media-symbolic"_s);
+    case Source::Stream:        return IconLoader::Load(u"internet-services-symbolic"_s);
+    case Source::Subsonic:      return IconLoader::Load(u"strwbr-subsonic-symbolic"_s);
+    case Source::Tidal:         return IconLoader::Load(u"strwbr-tidal-symbolic"_s);
+    case Source::Spotify:       return IconLoader::Load(u"strwbr-spotify-symbolic"_s);
+    case Source::Qobuz:         return IconLoader::Load(u"strwbr-qobuz-symbolic"_s);
+    case Source::SomaFM:        return IconLoader::Load(u"strwbr-somafm-symbolic"_s);
+    case Source::RadioParadise: return IconLoader::Load(u"strwbr-radioparadise-symbolic"_s);
+    case Source::Unknown:       return IconLoader::Load(u"edit-delete-symbolic"_s);
   }
   return IconLoader::Load(u"edit-delete"_s);
 

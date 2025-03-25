@@ -414,7 +414,7 @@ MainWindow::MainWindow(Application *app, SharedPtr<SystemTrayIcon> tray_icon, OS
   ui_->tabs->AddTab(queue_view_, u"queue"_s, IconLoader::Load(u"footsteps"_s), tr("Queue"));
   ui_->tabs->AddTab(playlist_list_, u"playlists"_s, IconLoader::Load(u"view-media-playlist"_s), tr("Playlists"));
   ui_->tabs->AddTab(smartplaylists_view_, u"smartplaylists"_s, IconLoader::Load(u"playlist-generator"_s), tr("Smart playlists"));
-  ui_->tabs->AddTab(file_view_, u"files"_s, IconLoader::Load(u"document-open"_s), tr("Files"));
+  ui_->tabs->AddTab(file_view_, u"files"_s, IconLoader::Load(u"document-open-symbolic"_s), tr("Files"));
   ui_->tabs->AddTab(radio_view_, u"radios"_s, IconLoader::Load(u"radio"_s), tr("Radios"));
 #ifndef Q_OS_WIN32
   ui_->tabs->AddTab(device_view_, u"devices"_s, IconLoader::Load(u"drive-removable-media-symbolic"_s), tr("Devices"));

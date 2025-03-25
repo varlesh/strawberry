@@ -49,10 +49,12 @@ SystemTrayIcon::SystemTrayIcon(QObject *parent)
       available_(false),
       trayicon_progress_(false),
       song_progress_(0) {
-const QIcon tiny_start = IconLoader::Load(u"strwbr-play-symbolic"_s);
-const QIcon tiny_pause = IconLoader::Load(u"strwbr-pause-symbolic"_s);
-pixmap_playing_ = tiny_start.pixmap(22, QIcon::Normal);
-pixmap_paused_ = tiny_pause.pixmap(22, QIcon::Normal);
+
+  const QIcon tiny_start = IconLoader::Load(u"strwbr-tray-play-symbolic"_s);
+  const QIcon tiny_pause = IconLoader::Load(u"strwbr-tray-pause-symbolic"_s);
+
+  pixmap_playing_ = tiny_start.pixmap(22, QIcon::Normal);
+  pixmap_paused_ = tiny_pause.pixmap(22, QIcon::Normal);
 
   const QIcon icon = IconLoader::Load(u"strwbr-tray-symbolic"_s);
   const QIcon icon_grey = IconLoader::Load(u"strawberry-grey"_s);

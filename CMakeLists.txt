@@ -1472,6 +1472,7 @@ endif()
 
 add_subdirectory(src)
 add_subdirectory(dist)
+add_subdirectory(data/icons)
 
 if(TARGET GTest::gtest AND TARGET GTest::gmock AND Qt${QT_VERSION_MAJOR}Test_FOUND)
   add_subdirectory(tests)
@@ -1577,17 +1578,3 @@ optional_component_summary_show()
 if(NOT CMAKE_CROSSCOMPILING AND NOT QT_SQLITE_TEST)
   message(WARNING "The Qt sqlite driver test failed.")
 endif()
-
-install(FILES
-${PROJECT_SOURCE_DIR}/data/icons/hicolor/22x22/status/new-audio-alarm-symbolic.svg
-${PROJECT_SOURCE_DIR}/data/icons/hicolor/22x22/status/strwbr-pause-symbolic.svg
-${PROJECT_SOURCE_DIR}/data/icons/hicolor/22x22/status/strwbr-play-symbolic.svg
-${PROJECT_SOURCE_DIR}/data/icons/hicolor/22x22/status/strwbr-qobuz-symbolic.svg
-${PROJECT_SOURCE_DIR}/data/icons/hicolor/22x22/status/strwbr-spotify-symbolic.svg
-${PROJECT_SOURCE_DIR}/data/icons/hicolor/22x22/status/strwbr-subsonic-symbolic.svg
-${PROJECT_SOURCE_DIR}/data/icons/hicolor/22x22/status/strwbr-symbolic.svg
-${PROJECT_SOURCE_DIR}/data/icons/hicolor/22x22/status/strwbr-tidal-symbolic.svg
-${PROJECT_SOURCE_DIR}/data/icons/hicolor/22x22/status/strwbr-tray-symbolic.svg
-DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/22x22/status/
-COMPONENT data
-)

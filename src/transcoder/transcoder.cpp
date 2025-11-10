@@ -225,6 +225,7 @@ QList<TranscoderPreset> Transcoder::GetAllPresets() {
   ret << PresetForFileType(Song::FileType::MPEG);
   ret << PresetForFileType(Song::FileType::MP4);
   ret << PresetForFileType(Song::FileType::ASF);
+  ret << PresetForFileType(Song::FileType::ALAC);
 
   return ret;
 
@@ -253,6 +254,8 @@ TranscoderPreset Transcoder::PresetForFileType(const Song::FileType filetype) {
       return TranscoderPreset(filetype, u"M4A AAC"_s,                u"mp4"_s,  u"audio/mpeg, mpegversion=(int)4"_s, u"audio/mp4"_s);
     case Song::FileType::ASF:
       return TranscoderPreset(filetype, u"Windows Media audio"_s,    u"wma"_s,  u"audio/x-wma"_s, u"video/x-ms-asf"_s);
+    case Song::FileType::ALAC:
+      return TranscoderPreset(filetype, u"ALAC"_s,                   u"m4a"_s,  u"audio/x-alac"_s, u"audio/mp4"_s);
     default:
       qLog(Warning) << "Unsupported format in PresetForFileType:" << static_cast<int>(filetype);
       return TranscoderPreset();
@@ -604,7 +607,7 @@ void Transcoder::SetElementProperties(const QString &name, GObject *object) {
         break;
       }
       case G_TYPE_UINT:{
-        const guint g_value = static_cast<gint>(value.toUInt());
+        const guint g_value = static_cast<guint>(value.toUInt());
         qLog(Debug) << "Setting" << property->name << "(uint)" << "to" << g_value;
         g_object_set(object, property->name, g_value, nullptr);
         break;

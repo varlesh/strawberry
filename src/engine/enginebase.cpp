@@ -46,6 +46,7 @@ using namespace Qt::Literals::StringLiterals;
 
 EngineBase::EngineBase(QObject *parent)
     : QObject(parent),
+      playbin3_enabled_(true),
       exclusive_mode_(false),
       volume_control_(true),
       volume_(100),
@@ -156,6 +157,8 @@ void EngineBase::ReloadSettings() {
     device_ = s.value(BackendSettings::kDevice);
   }
 
+  playbin3_enabled_ = s.value(BackendSettings::kPlaybin3, true).toBool();
+
   exclusive_mode_ = s.value(BackendSettings::kExclusiveMode, false).toBool();
 
   volume_control_ = s.value(BackendSettings::kVolumeControl, true).toBool();
@@ -163,7 +166,7 @@ void EngineBase::ReloadSettings() {
   channels_enabled_ = s.value(BackendSettings::kChannelsEnabled, false).toBool();
   channels_ = s.value(BackendSettings::kChannels, 0).toInt();
 
-  buffer_duration_nanosec_ = s.value(BackendSettings::kBufferDuration, BackendSettings::kDefaultBufferDuration).toLongLong() * kNsecPerMsec;
+  buffer_duration_nanosec_ = s.value(BackendSettings::kBufferDuration, BackendSettings::kDefaultBufferDuration).toULongLong() * kNsecPerMsec;
   buffer_low_watermark_ = s.value(BackendSettings::kBufferLowWatermark, BackendSettings::kDefaultBufferLowWatermark).toDouble();
   buffer_high_watermark_ = s.value(BackendSettings::kBufferHighWatermark, BackendSettings::kDefaultBufferHighWatermark).toDouble();
 
@@ -251,5 +254,21 @@ bool EngineBase::ValidOutput(const QString &output) {
   Q_UNUSED(output);
 
   return (true);
+
+}
+
+void EngineBase::UpdateSpotifyAccessToken(const QString &spotify_access_token) {
+
+#ifdef HAVE_SPOTIFY
+
+  spotify_access_token_ = spotify_access_token;
+
+  SetSpotifyAccessToken();
+
+#else
+
+  Q_UNUSED(spotify_access_token)
+
+#endif  // HAVE_SPOTIFY
 
 }

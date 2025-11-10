@@ -45,7 +45,6 @@
 
 #include "lastfmimport.h"
 
-#include "scrobblingapi20.h"
 #include "lastfmscrobbler.h"
 
 using namespace Qt::Literals::StringLiterals;
@@ -109,7 +108,7 @@ void LastFMImport::ReloadSettings() {
 QNetworkReply *LastFMImport::CreateRequest(const ParamList &request_params) {
 
   ParamList params = ParamList()
-    << Param(u"api_key"_s, QLatin1String(ScrobblingAPI20::kApiKey))
+    << Param(u"api_key"_s, QLatin1String(LastFMScrobbler::kApiKey))
     << Param(u"user"_s, username_)
     << Param(u"lang"_s, QLocale().name().left(2).toLower())
     << Param(u"format"_s, u"json"_s)
@@ -197,7 +196,7 @@ void LastFMImport::ImportData(const bool lastplayed, const bool playcount) {
 
 void LastFMImport::FlushRequests() {
 
-  if (!recent_tracks_requests_.isEmpty()) {
+  if (!recent_tracks_requests_.isEmpty() && (!playcount_ || (playcount_total_ > 0 || top_tracks_requests_.isEmpty()))) {
     SendGetRecentTracksRequest(recent_tracks_requests_.dequeue());
     return;
   }
@@ -519,8 +518,7 @@ void LastFMImport::GetTopTracksRequestFinished(QNetworkReply *reply, const int p
 
 void LastFMImport::UpdateTotalCheck() {
 
-  if ((!playcount_ || playcount_total_ > 0) && (!lastplayed_ || lastplayed_total_ > 0))
-    Q_EMIT UpdateTotal(lastplayed_total_, playcount_total_);
+  Q_EMIT UpdateTotal(lastplayed_total_, playcount_total_);
 
 }
 

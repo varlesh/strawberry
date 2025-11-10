@@ -858,7 +858,7 @@ void CollectionWatcher::UpdateCueAssociatedSongs(const QString &file,
 
   QHash<quint64, Song> sections_map;
   for (const Song &song : old_cue_songs) {
-    sections_map.insert(song.beginning_nanosec(), song);
+    sections_map.insert(static_cast<quint64>(song.beginning_nanosec()), song);
   }
 
   // Load new CUE songs
@@ -879,8 +879,8 @@ void CollectionWatcher::UpdateCueAssociatedSongs(const QString &file,
     PerformEBUR128Analysis(new_cue_song);
     new_cue_song.set_fingerprint(fingerprint);
 
-    if (sections_map.contains(new_cue_song.beginning_nanosec())) {  // Changed section
-      const Song matching_cue_song = sections_map[new_cue_song.beginning_nanosec()];
+    if (sections_map.contains(static_cast<quint64>(new_cue_song.beginning_nanosec()))) {  // Changed section
+      const Song matching_cue_song = sections_map[static_cast<quint64>(new_cue_song.beginning_nanosec())];
       new_cue_song.set_id(matching_cue_song.id());
       new_cue_song.set_art_automatic(art_automatic);
       new_cue_song.MergeUserSetData(matching_cue_song, true, true);
@@ -999,6 +999,18 @@ void CollectionWatcher::AddChangedSong(const QString &file, const Song &matching
       changes << u"file path"_s;
       notify_new = true;
     }
+    if (matching_song.filetype() != new_song.filetype()) {
+      changes << u"filetype"_s;
+      notify_new = true;
+    }
+    if (matching_song.filesize() != new_song.filesize()) {
+      changes << u"filesize"_s;
+      notify_new = true;
+    }
+    if (matching_song.length_nanosec() != new_song.length_nanosec()) {
+      changes << u"length"_s;
+      notify_new = true;
+    }
     if (matching_song.fingerprint() != new_song.fingerprint()) {
       changes << u"fingerprint"_s;
       notify_new = true;
@@ -1033,6 +1045,9 @@ void CollectionWatcher::AddChangedSong(const QString &file, const Song &matching
     }
     if (matching_song.mtime() != new_song.mtime()) {
       changes << u"mtime"_s;
+    }
+    if (matching_song.ctime() != new_song.ctime()) {
+      changes << u"ctime"_s;
     }
 
     if (changes.isEmpty()) {
@@ -1082,7 +1097,7 @@ quint64 CollectionWatcher::GetMtimeForCue(const QString &cue_path) {
 
   const QDateTime cue_last_modified = fileinfo.lastModified();
 
-  return cue_last_modified.isValid() ? cue_last_modified.toSecsSinceEpoch() : 0;
+  return cue_last_modified.isValid() ? static_cast<quint64>(cue_last_modified.toSecsSinceEpoch()) : 0;
 
 }
 

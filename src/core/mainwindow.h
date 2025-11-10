@@ -2,7 +2,7 @@
  * Strawberry Music Player
  * This file was part of Clementine.
  * Copyright 2010, David Sansome <me@davidsansome.com>
- * Copyright 2013-2021, Jonas Kvinge <jonas@jkvinge.net>
+ * Copyright 2013-2025, Jonas Kvinge <jonas@jkvinge.net>
  *
  * Strawberry is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,8 @@
 #define MAINWINDOW_H
 
 #include "config.h"
+
+#include <optional>
 
 #include <QtGlobal>
 #include <QObject>
@@ -52,6 +54,7 @@
 #include "core/platforminterface.h"
 #include "core/song.h"
 #include "core/settings.h"
+#include "core/commandlineoptions.h"
 #include "tagreader/tagreaderclient.h"
 #include "osd/osdbase.h"
 #include "playlist/playlist.h"
@@ -70,9 +73,7 @@ class CollectionViewContainer;
 class CollectionFilter;
 class AlbumCoverChoiceController;
 class CommandlineOptions;
-#ifndef Q_OS_WIN32
 class DeviceViewContainer;
-#endif
 class EditTagDialog;
 class Equalizer;
 class ErrorDialog;
@@ -99,20 +100,33 @@ class AddStreamDialog;
 class LastFMImportDialog;
 class RadioViewContainer;
 
+#ifdef HAVE_DISCORD_RPC
+namespace discord {
+class RichPresence;
+}
+#endif
+
 class MainWindow : public QMainWindow, public PlatformInterface {
   Q_OBJECT
 
  public:
-  explicit MainWindow(Application *app, SharedPtr<SystemTrayIcon> tray_icon, OSDBase *osd, const CommandlineOptions &options, QWidget *parent = nullptr);
+  explicit MainWindow(Application *app,
+                      SharedPtr<SystemTrayIcon> systemtrayicon,
+                      OSDBase *osd,
+#ifdef HAVE_DISCORD_RPC
+                      discord::RichPresence *discord_rich_presence,
+#endif
+                      const CommandlineOptions &options,
+                      QWidget *parent = nullptr);
   ~MainWindow() override;
 
   void SetHiddenInTray(const bool hidden);
   void CommandlineOptionsReceived(const CommandlineOptions &options);
 
  protected:
-  void showEvent(QShowEvent *e) override;
   void hideEvent(QHideEvent *e) override;
   void closeEvent(QCloseEvent *e) override;
+  void changeEvent(QEvent *e) override;
   void keyPressEvent(QKeyEvent *e) override;
 #ifdef Q_OS_WIN32
   bool nativeEvent(const QByteArray &eventType, void *message, qintptr *result) override;
@@ -131,6 +145,8 @@ class MainWindow : public QMainWindow, public PlatformInterface {
   void AuthorizationUrlReceived(const QUrl &url);
 
  private Q_SLOTS:
+  void PlaylistsLoaded();
+
   void FilePathChanged(const QString &path);
 
   void MediaStopped();
@@ -220,6 +236,7 @@ class MainWindow : public QMainWindow, public PlatformInterface {
 
   void ShowAboutDialog();
   void ShowErrorDialog(const QString &message);
+  void CheckShowErrorDialog();
   void ShowTranscodeDialog();
   SettingsDialog *CreateSettingsDialog();
   EditTagDialog *CreateEditTagDialog();
@@ -294,8 +311,12 @@ class MainWindow : public QMainWindow, public PlatformInterface {
 #endif
 
   Application *app_;
-  SharedPtr<SystemTrayIcon> tray_icon_;
+  SharedPtr<SystemTrayIcon> systemtrayicon_;
   OSDBase *osd_;
+#ifdef HAVE_DISCORD_RPC
+  discord::RichPresence *discord_rich_presence_;
+#endif
+  Lazy<ErrorDialog> error_dialog_;
   Lazy<About> about_dialog_;
   Lazy<Console> console_;
   Lazy<EditTagDialog> edit_tag_dialog_;
@@ -306,13 +327,10 @@ class MainWindow : public QMainWindow, public PlatformInterface {
   ContextView *context_view_;
   CollectionViewContainer *collection_view_;
   FileView *file_view_;
-#ifndef Q_OS_WIN32
   DeviceViewContainer *device_view_;
-#endif
   PlaylistListContainer *playlist_list_;
   QueueView *queue_view_;
 
-  Lazy<ErrorDialog> error_dialog_;
   Lazy<SettingsDialog> settings_dialog_;
   Lazy<AlbumCoverManager> cover_manager_;
   SharedPtr<Equalizer> equalizer_;
@@ -359,9 +377,7 @@ class MainWindow : public QMainWindow, public PlatformInterface {
   QAction *playlist_move_to_collection_;
   QAction *playlist_open_in_browser_;
   QAction *playlist_organize_;
-#ifndef Q_OS_WIN32
   QAction *playlist_copy_to_device_;
-#endif
   QAction *playlist_delete_;
   QAction *playlist_queue_;
   QAction *playlist_queue_play_next_;
@@ -396,7 +412,9 @@ class MainWindow : public QMainWindow, public PlatformInterface {
   AlbumCoverImageResult album_cover_;
   bool exit_;
   int exit_count_;
+  bool playlists_loaded_;
   bool delete_files_;
+  std::optional<CommandlineOptions> options_;
 
 };
 

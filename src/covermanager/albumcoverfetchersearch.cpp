@@ -98,7 +98,7 @@ void AlbumCoverFetcherSearch::Start(SharedPtr<CoverProviders> cover_providers) {
 
   for (CoverProvider *provider : std::as_const(cover_providers_sorted)) {
 
-    if (!provider->is_enabled()) continue;
+    if (!provider->enabled()) continue;
 
     // Skip any provider that requires authentication but is not authenticated.
     if (provider->authentication_required() && !provider->authenticated()) {
@@ -248,6 +248,8 @@ void AlbumCoverFetcherSearch::ProviderSearchFinished(const int id, const CoverPr
 }
 
 void AlbumCoverFetcherSearch::AllProvidersFinished() {
+
+  qLog(Debug) << "Search finished, got" << results_.count() << "results";
 
   if (cancel_requested_) {
     return;

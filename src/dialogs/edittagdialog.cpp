@@ -137,8 +137,8 @@ EditTagDialog::EditTagDialog(const SharedPtr<NetworkAccessManager> network,
       image_no_cover_thumbnail_(ImageUtils::GenerateNoCoverImage(QSize(128, 128), devicePixelRatioF())),
       loading_(false),
       ignore_edits_(false),
-      summary_cover_art_id_(-1),
-      tags_cover_art_id_(-1),
+      summary_cover_art_id_(0),
+      tags_cover_art_id_(0),
       cover_art_is_set_(false),
       save_tag_pending_(0),
       lyrics_id_(-1) {
@@ -199,6 +199,7 @@ EditTagDialog::EditTagDialog(const SharedPtr<NetworkAccessManager> network,
       }
       else if (RatingBox *ratingbox = qobject_cast<RatingBox*>(widget)) {
         QObject::connect(ratingbox, &RatingWidget::RatingChanged, this, &EditTagDialog::FieldValueEdited);
+        QObject::connect(ratingbox, &RatingBox::Reset, this, &EditTagDialog::ResetField);
       }
     }
   }
@@ -273,12 +274,18 @@ EditTagDialog::EditTagDialog(const SharedPtr<NetworkAccessManager> network,
       QKeySequence(QKeySequence::MoveToNextPage).toString(QKeySequence::NativeText)));
 
   new TagCompleter(collection_backend, Playlist::Column::Artist, ui_->artist);
+  new TagCompleter(collection_backend, Playlist::Column::ArtistSort, ui_->artistsort);
   new TagCompleter(collection_backend, Playlist::Column::Album, ui_->album);
+  new TagCompleter(collection_backend, Playlist::Column::AlbumSort, ui_->albumsort);
   new TagCompleter(collection_backend, Playlist::Column::AlbumArtist, ui_->albumartist);
+  new TagCompleter(collection_backend, Playlist::Column::AlbumArtistSort, ui_->albumartistsort);
   new TagCompleter(collection_backend, Playlist::Column::Genre, ui_->genre);
   new TagCompleter(collection_backend, Playlist::Column::Composer, ui_->composer);
+  new TagCompleter(collection_backend, Playlist::Column::ComposerSort, ui_->composersort);
   new TagCompleter(collection_backend, Playlist::Column::Performer, ui_->performer);
+  new TagCompleter(collection_backend, Playlist::Column::PerformerSort, ui_->performersort);
   new TagCompleter(collection_backend, Playlist::Column::Grouping, ui_->grouping);
+  new TagCompleter(collection_backend, Playlist::Column::TitleSort, ui_->titlesort);
 
 }
 
@@ -492,11 +499,17 @@ void EditTagDialog::SetSongListVisibility(bool visible) {
 QVariant EditTagDialog::Data::value(const Song &song, const QString &id) {
 
   if (id == "title"_L1) return song.title();
+  if (id == "titlesort"_L1) return song.titlesort();
   if (id == "artist"_L1) return song.artist();
+  if (id == "artistsort"_L1) return song.artistsort();
   if (id == "album"_L1) return song.album();
+  if (id == "albumsort"_L1) return song.albumsort();
   if (id == "albumartist"_L1) return song.albumartist();
+  if (id == "albumartistsort"_L1) return song.albumartistsort();
   if (id == "composer"_L1) return song.composer();
+  if (id == "composersort"_L1) return song.composersort();
   if (id == "performer"_L1) return song.performer();
+  if (id == "performersort"_L1) return song.performersort();
   if (id == "grouping"_L1) return song.grouping();
   if (id == "genre"_L1) return song.genre();
   if (id == "comment"_L1) return song.comment();
@@ -514,11 +527,17 @@ QVariant EditTagDialog::Data::value(const Song &song, const QString &id) {
 void EditTagDialog::Data::set_value(const QString &id, const QVariant &value) {
 
   if (id == "title"_L1) current_.set_title(value.toString());
+  else if (id == "titlesort"_L1) current_.set_titlesort(value.toString());
   else if (id == "artist"_L1) current_.set_artist(value.toString());
+  else if (id == "artistsort"_L1) current_.set_artistsort(value.toString());
   else if (id == "album"_L1) current_.set_album(value.toString());
+  else if (id == "albumsort"_L1) current_.set_albumsort(value.toString());
   else if (id == "albumartist"_L1) current_.set_albumartist(value.toString());
+  else if (id == "albumartistsort"_L1) current_.set_albumartistsort(value.toString());
   else if (id == "composer"_L1) current_.set_composer(value.toString());
+  else if (id == "composersort"_L1) current_.set_composersort(value.toString());
   else if (id == "performer"_L1) current_.set_performer(value.toString());
+  else if (id == "performersort"_L1) current_.set_performersort(value.toString());
   else if (id == "grouping"_L1) current_.set_grouping(value.toString());
   else if (id == "genre"_L1) current_.set_genre(value.toString());
   else if (id == "comment"_L1) current_.set_comment(value.toString());
@@ -544,6 +563,20 @@ bool EditTagDialog::DoesValueVary(const QModelIndexList &sel, const QString &id)
 
 bool EditTagDialog::IsValueModified(const QModelIndexList &sel, const QString &id) const {
 
+  if (id == u"track"_s || id == u"disc"_s || id == u"year"_s) {
+    return std::any_of(sel.begin(), sel.end(), [this, id](const QModelIndex &i) {
+      const int original = data_[i.row()].original_value(id).toInt();
+      const int current = data_[i.row()].current_value(id).toInt();
+      return original != current && (original != -1 || current != 0);
+    });
+  }
+  else if (id == u"rating"_s) {
+    return std::any_of(sel.begin(), sel.end(), [this, id](const QModelIndex &i) {
+      const float original = data_[i.row()].original_value(id).toFloat();
+      const float current = data_[i.row()].current_value(id).toFloat();
+      return original != current && (original != -1 || current != 0);
+    });
+  }
   return std::any_of(sel.begin(), sel.end(), [this, id](const QModelIndex &i) { return data_[i.row()].original_value(id) != data_[i.row()].current_value(id); });
 
 }
@@ -605,7 +638,15 @@ void EditTagDialog::UpdateModifiedField(const FieldData &field, const QModelInde
   QFont new_font(font());
   new_font.setBold(modified);
   field.label_->setFont(new_font);
-  if (field.editor_) field.editor_->setFont(new_font);
+  if (field.editor_) {
+    if (ExtendedEditor *editor = dynamic_cast<ExtendedEditor*>(field.editor_)) {
+      editor->set_font(new_font);
+      editor->set_reset_button(modified);
+    }
+    else {
+      field.editor_->setFont(new_font);
+    }
+  }
 
 }
 
@@ -652,14 +693,20 @@ void EditTagDialog::SelectionChanged() {
   bool art_different = false;
   bool action_different = false;
   bool albumartist_enabled = false;
+  bool albumartistsort_enabled = false;
   bool composer_enabled = false;
+  bool composersort_enabled = false;
   bool performer_enabled = false;
+  bool performersort_enabled = false;
   bool grouping_enabled = false;
   bool genre_enabled = false;
   bool compilation_enabled = false;
   bool rating_enabled = false;
   bool comment_enabled = false;
   bool lyrics_enabled = false;
+  bool titlesort_enabled = false;
+  bool artistsort_enabled = false;
+  bool albumsort_enabled = false;
   for (const QModelIndex &idx : indexes) {
     if (data_.value(idx.row()).cover_action_ == UpdateCoverAction::None) {
       data_[idx.row()].cover_result_ = AlbumCoverImageResult();
@@ -679,11 +726,20 @@ void EditTagDialog::SelectionChanged() {
     if (song.albumartist_supported()) {
       albumartist_enabled = true;
     }
+    if (song.albumartistsort_supported()) {
+      albumartistsort_enabled = true;
+    }
     if (song.composer_supported()) {
       composer_enabled = true;
     }
+    if (song.composersort_supported()) {
+      composersort_enabled = true;
+    }
     if (song.performer_supported()) {
       performer_enabled = true;
+    }
+    if (song.performersort_supported()) {
+      performersort_enabled = true;
     }
     if (song.grouping_supported()) {
       grouping_enabled = true;
@@ -703,6 +759,15 @@ void EditTagDialog::SelectionChanged() {
     if (song.lyrics_supported()) {
       lyrics_enabled = true;
     }
+    if (song.titlesort_supported()) {
+      titlesort_enabled = true;
+    }
+    if (song.artistsort_supported()) {
+      artistsort_enabled = true;
+    }
+    if (song.albumsort_supported()) {
+      albumsort_enabled = true;
+    }
   }
 
   QString summary;
@@ -719,7 +784,7 @@ void EditTagDialog::SelectionChanged() {
   const bool enable_change_art = first_song.is_local_collection_song();
   ui_->tags_art_button->setEnabled(enable_change_art);
   if ((art_different && first_cover_action != UpdateCoverAction::New) || action_different) {
-    tags_cover_art_id_ = -1;  // Cancels any pending art load.
+    tags_cover_art_id_ = 0;  // Cancels any pending art load.
     ui_->tags_art->clear();
     ui_->tags_art->setText(QLatin1String(kArtDifferentHintText));
     album_cover_choice_controller_->show_cover_action()->setEnabled(false);
@@ -759,14 +824,20 @@ void EditTagDialog::SelectionChanged() {
   album_cover_choice_controller_->set_save_embedded_cover_override(embedded_cover);
 
   ui_->albumartist->setEnabled(albumartist_enabled);
+  ui_->albumartistsort->setEnabled(albumartistsort_enabled);
   ui_->composer->setEnabled(composer_enabled);
+  ui_->composersort->setEnabled(composersort_enabled);
   ui_->performer->setEnabled(performer_enabled);
+  ui_->performersort->setEnabled(performersort_enabled);
   ui_->grouping->setEnabled(grouping_enabled);
   ui_->genre->setEnabled(genre_enabled);
   ui_->compilation->setEnabled(compilation_enabled);
   ui_->rating->setEnabled(rating_enabled);
   ui_->comment->setEnabled(comment_enabled);
   ui_->lyrics->setEnabled(lyrics_enabled);
+  ui_->titlesort->setEnabled(titlesort_enabled);
+  ui_->artistsort->setEnabled(artistsort_enabled);
+  ui_->albumsort->setEnabled(albumsort_enabled);
 
 }
 
@@ -784,9 +855,9 @@ void EditTagDialog::SetText(QLabel *label, const int value, const QString &suffi
   label->setText(value <= 0 ? def : (QString::number(value) + QLatin1Char(' ') + suffix));
 }
 
-void EditTagDialog::SetDate(QLabel *label, const uint time) {
+void EditTagDialog::SetDate(QLabel *label, const qint64 time) {
 
-  if (time == std::numeric_limits<uint>::max()) {  // -1
+  if (time == std::numeric_limits<qint64>::max()) {  // -1
     label->setText(QObject::tr("Unknown"));
   }
   else {
@@ -819,7 +890,7 @@ void EditTagDialog::UpdateSummaryTab(const Song &song) {
     ui_->filesize->setText(tr("Unknown"));
   }
   else {
-    ui_->filesize->setText(Utilities::PrettySize(song.filesize()));
+    ui_->filesize->setText(Utilities::PrettySize(static_cast<quint64>(song.filesize())));
   }
 
   ui_->filetype->setText(song.TextForFiletype());
@@ -931,7 +1002,7 @@ void EditTagDialog::AlbumCoverLoaded(const quint64 id, const AlbumCoverLoaderRes
       summary += GetArtSummary(data_[idx.row()].current_, result.type);
       ui_->summary->setText(summary);
     }
-    summary_cover_art_id_ = -1;
+    summary_cover_art_id_ = 0;
   }
   else if (id == tags_cover_art_id_) {
     if (result.success && !result.image_scaled.isNull() && result.type != AlbumCoverLoaderResult::Type::Unset) {
@@ -964,7 +1035,7 @@ void EditTagDialog::AlbumCoverLoaded(const quint64 id, const AlbumCoverLoaderRes
       ui_->tags_summary->setText(summary);
       enable_change_art = first_song.is_local_collection_song() && !first_song.effective_albumartist().isEmpty() && !first_song.album().isEmpty();
     }
-    tags_cover_art_id_ = -1;
+    tags_cover_art_id_ = 0;
     album_cover_choice_controller_->show_cover_action()->setEnabled(result.success && result.type != AlbumCoverLoaderResult::Type::Unset);
     album_cover_choice_controller_->cover_to_file_action()->setEnabled(result.success && result.type != AlbumCoverLoaderResult::Type::Unset);
     album_cover_choice_controller_->delete_cover_action()->setEnabled(enable_change_art && result.success && result.type != AlbumCoverLoaderResult::Type::Unset);

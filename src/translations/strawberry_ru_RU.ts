@@ -366,7 +366,7 @@
     </message>
     <message>
       <source>Settings require restart.</source>
-      <translation>Применение настроек требует перезапуска.</translation>
+      <translation>Для применения настроек требуется перезапуск.</translation>
     </message>
     <message>
       <source>Tabbar colors</source>
@@ -1050,11 +1050,11 @@
     </message>
     <message>
       <source>Perform song EBU R 128 analysis (required for EBU R 128 loudness normalization)</source>
-      <translation>Выполнить анализ песни EBU R 128 (для нормализации громкости EBU R 128)</translation>
+      <translation>Анализировать песни по стандарту нормализации громкости EBU R 128</translation>
     </message>
     <message>
       <source>Expire unavailable songs after</source>
-      <translation>Забывать недоступные песни после</translation>
+      <translation>Забывать недоступные песни через</translation>
     </message>
     <message>
       <source>days</source>
@@ -2208,7 +2208,7 @@ If there are no matches then it will use the largest image in the directory.</so
     </message>
     <message>
       <source>Unknown</source>
-      <translation>Неизвестный</translation>
+      <translation>Неизвестно</translation>
     </message>
     <message>
       <source>Yes</source>
@@ -4331,7 +4331,7 @@ If there are no matches then it will use the largest image in the directory.</so
     </message>
     <message>
       <source>Source</source>
-      <translation>Исток</translation>
+      <translation>Источник</translation>
     </message>
     <message>
       <source>Mood</source>
@@ -5809,11 +5809,11 @@ Are you sure you want to continue?</source>
     </message>
     <message>
       <source>User token:</source>
-      <translation>Пользовательский токен:</translation>
+      <translation>Токен пользователя:</translation>
     </message>
     <message>
       <source>Enter your user token from</source>
-      <translation>Укажите ваш пользовательский токен из</translation>
+      <translation>Укажите ваш токен пользователя с</translation>
     </message>
     <message>
       <source>With this option enabled, scrobbles will be cached to disk but not sent to the server. This option can be enabled in cases where the server or the internet connection is unstable, the scrobbles will be sent when the option is disabled.</source>

@@ -101,11 +101,17 @@ class Playlist : public QAbstractListModel {
   // Always add new columns to the end of this enum - the values are persisted
   enum class Column {
     Title = 0,
+    TitleSort,
     Artist,
+    ArtistSort,
     Album,
+    AlbumSort,
     AlbumArtist,
+    AlbumArtistSort,
     Performer,
+    PerformerSort,
     Composer,
+    ComposerSort,
     Year,
     OriginalYear,
     Track,
@@ -115,7 +121,7 @@ class Playlist : public QAbstractListModel {
     Samplerate,
     Bitdepth,
     Bitrate,
-    Filename,
+    URL,
     BaseFilename,
     Filesize,
     Filetype,
@@ -127,11 +133,14 @@ class Playlist : public QAbstractListModel {
     Comment,
     Grouping,
     Source,
-    Mood,
+    Moodbar,
     Rating,
     HasCUE,
     EBUR128IntegratedLoudness,
     EBUR128LoudnessRange,
+    BPM,
+    Mood,
+    InitialKey,
     ColumnCount
   };
   using Columns = QList<Column>;
@@ -268,9 +277,9 @@ class Playlist : public QAbstractListModel {
 
   static Columns ChangedColumns(const Song &metadata1, const Song &metadata2);
   static bool MinorMetadataChange(const Song &old_metadata, const Song &new_metadata);
-  void UpdateItemMetadata(PlaylistItemPtr item, const Song &new_metadata, const bool temporary);
-  void UpdateItemMetadata(const int row, PlaylistItemPtr item, const Song &new_metadata, const bool temporary);
-  void ItemChanged(const int row, const Columns &columns);
+  void UpdateItemMetadata(PlaylistItemPtr item, const Song &new_metadata, const bool stream_metadata_update);
+  void UpdateItemMetadata(const int row, PlaylistItemPtr item, const Song &new_metadata, const bool stream_metadata_update);
+  void RowDataChanged(const int row, const Columns &columns);
 
   // Changes rating of a song to the given value asynchronously
   void RateSong(const QModelIndex &idx, const float rating);

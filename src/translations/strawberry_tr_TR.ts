@@ -1183,11 +1183,11 @@ If there are no matches then it will use the largest image in the directory.</tr
     </message>
     <message>
       <source>Queue track</source>
-      <translation>Parçayı sıraya al</translation>
+      <translation>Çalma sırasına ekle</translation>
     </message>
     <message>
       <source>Queue to play next</source>
-      <translation>Çalınacaklar sırası</translation>
+      <translation>Sıradaki Yap</translation>
     </message>
     <message>
       <source>Search for this</source>
@@ -2860,7 +2860,7 @@ If there are no matches then it will use the largest image in the directory.</tr
     <name>GstEngine</name>
     <message>
       <source>Buffering</source>
-      <translation type="unfinished">Buffering</translation>
+      <translation>Yükleniyor</translation>
     </message>
   </context>
   <context>
@@ -3412,7 +3412,7 @@ If there are no matches then it will use the largest image in the directory.</tr
     </message>
     <message>
       <source>Queue selected tracks to play next</source>
-      <translation type="unfinished">Queue selected tracks to play next</translation>
+      <translation>Seçilen parçaları sıradaki yap</translation>
     </message>
     <message>
       <source>Toggle skip status</source>
@@ -3488,7 +3488,7 @@ If there are no matches then it will use the largest image in the directory.</tr
     </message>
     <message>
       <source>Queue track</source>
-      <translation>Parçayı sıraya al</translation>
+      <translation>Çalma sırasına ekle</translation>
     </message>
     <message>
       <source>Queue selected tracks</source>
@@ -3496,7 +3496,7 @@ If there are no matches then it will use the largest image in the directory.</tr
     </message>
     <message>
       <source>Queue to play next</source>
-      <translation>Çalınacaklar sırası</translation>
+      <translation>Sıradaki Yap</translation>
     </message>
     <message>
       <source>Unskip track</source>
@@ -6127,7 +6127,7 @@ Devam etmek istediğinizden emin misiniz?</translation>
     </message>
     <message>
       <source>Queue track</source>
-      <translation>Parçayı sıraya al</translation>
+      <translation>Çalma sırasına ekle</translation>
     </message>
     <message>
       <source>Play next</source>
@@ -6403,11 +6403,11 @@ Devam etmek istediğinizden emin misiniz?</translation>
     </message>
     <message>
       <source>Queue track</source>
-      <translation>Parçayı sıraya al</translation>
+      <translation>Çalma sırasına ekle</translation>
     </message>
     <message>
       <source>Queue to play next</source>
-      <translation>Çalınacaklar sırası</translation>
+      <translation>Sıradaki Yap</translation>
     </message>
     <message>
       <source>Remove from favorites</source>
@@ -6484,7 +6484,7 @@ Devam etmek istediğinizden emin misiniz?</translation>
     </message>
     <message>
       <source>Queue track</source>
-      <translation>Parçayı sıraya al</translation>
+      <translation>Çalma sırasına ekle</translation>
     </message>
     <message>
       <source>Add to artists</source>

@@ -81,7 +81,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(MSVC)
-  list(APPEND COMPILE_OPTIONS /MP)
+  list(APPEND COMPILE_OPTIONS -MP -W4 -wd4702)
 else()
   list(APPEND COMPILE_OPTIONS
     $<$<COMPILE_LANGUAGE:C>:-std=c11>
@@ -212,6 +212,8 @@ find_package(GTest)
 
 pkg_check_modules(LIBSPARSEHASH IMPORTED_TARGET libsparsehash)
 
+find_package(RapidJSON)
+
 set(QT_VERSION_MAJOR 6)
 set(QT_MIN_VERSION 6.4.0)
 set(QT_DEFAULT_MAJOR_VERSION ${QT_VERSION_MAJOR})
@@ -257,7 +259,18 @@ if(APPLE)
 endif()
 
 if(WIN32)
-  find_package(getopt-win REQUIRED)
+  find_package(getopt NAMES getopt getopt-win unofficial-getopt-win32 REQUIRED)
+  if(TARGET getopt::getopt)
+    set(GETOPT_LIBRARIES getopt::getopt)
+  elseif(TARGET getopt-win::getopt)
+    set(GETOPT_LIBRARIES getopt-win::getopt)
+  elseif(TARGET getopt::getopt_shared)
+    set(GETOPT_LIBRARIES getopt::getopt_shared)
+  elseif(TARGET unofficial::getopt-win32::getopt)
+    set(GETOPT_LIBRARIES unofficial::getopt-win32::getopt)
+  else()
+    message(FATAL_ERROR "Missing getopt")
+  endif()
 endif()
 
 if(APPLE OR WIN32)
@@ -362,6 +375,10 @@ optional_component(QPA_QPLATFORMNATIVEINTERFACE ON "QPA Platform Native Interfac
 
 optional_component(STREAMTAGREADER ON "Stream tagreader"
   DEPENDS "sparsehash" LIBSPARSEHASH_FOUND
+)
+
+optional_component(DISCORD_RPC ON "Discord Rich Presence"
+  DEPENDS "RapidJSON" RapidJSON_FOUND
 )
 
 if(HAVE_SONGFINGERPRINTING OR HAVE_MUSICBRAINZ)
@@ -777,9 +794,7 @@ set(SOURCES
   src/scrobbler/scrobblercache.cpp
   src/scrobbler/scrobblercacheitem.cpp
   src/scrobbler/scrobblemetadata.cpp
-  src/scrobbler/scrobblingapi20.cpp
   src/scrobbler/lastfmscrobbler.cpp
-  src/scrobbler/librefmscrobbler.cpp
   src/scrobbler/listenbrainzscrobbler.cpp
   src/scrobbler/lastfmimport.cpp
 
@@ -1070,9 +1085,7 @@ set(HEADERS
   src/scrobbler/scrobblersettingsservice.h
   src/scrobbler/scrobblerservice.h
   src/scrobbler/scrobblercache.h
-  src/scrobbler/scrobblingapi20.h
   src/scrobbler/lastfmscrobbler.h
-  src/scrobbler/librefmscrobbler.h
   src/scrobbler/listenbrainzscrobbler.h
   src/scrobbler/lastfmimport.h
 
@@ -1235,6 +1248,11 @@ optional_source(WIN32
 optional_source(HAVE_STREAMTAGREADER
   SOURCES src/tagreader/streamtagreader.cpp src/tagreader/tagreaderreadstreamrequest.cpp src/tagreader/tagreaderreadstreamreply.cpp
   HEADERS src/tagreader/tagreaderreadstreamreply.h
+)
+
+optional_source(HAVE_DISCORD_RPC
+  SOURCES src/discord/richpresence.cpp
+  HEADERS src/discord/richpresence.h
 )
 
 if(HAVE_GLOBALSHORTCUTS)
@@ -1482,6 +1500,11 @@ if(LINUX AND LSB_RELEASE_EXEC AND DPKG_BUILDPACKAGE)
   add_subdirectory(debian)
 endif()
 
+if(HAVE_DISCORD_RPC)
+  add_subdirectory(3rdparty/discord-rpc)
+  target_include_directories(strawberry_lib PUBLIC 3rdparty/discord-rpc)
+endif()
+
 if(HAVE_TRANSLATIONS)
   qt_add_lupdate(strawberry_lib TS_FILES "${CMAKE_SOURCE_DIR}/src/translations/strawberry_en_US.ts" OPTIONS -locations none -no-ui-lines -no-obsolete)
   file(GLOB_RECURSE ts_files ${CMAKE_SOURCE_DIR}/src/translations/*.ts)
@@ -1539,9 +1562,10 @@ target_link_libraries(strawberry_lib PUBLIC
   $<$<BOOL:${HAVE_MTP}>:PkgConfig::LIBMTP>
   $<$<BOOL:${HAVE_GPOD}>:PkgConfig::LIBGPOD PkgConfig::GDK_PIXBUF>
   $<$<BOOL:${HAVE_QTSPARKLE}>:qtsparkle-qt${QT_VERSION_MAJOR}::qtsparkle>
-  $<$<BOOL:${WIN32}>:dsound dwmapi getopt-win::getopt>
+  $<$<BOOL:${WIN32}>:dsound dwmapi ${GETOPT_LIBRARIES}>
   $<$<BOOL:${MSVC}>:WindowsApp>
   KDAB::kdsingleapplication
+  $<$<BOOL:${HAVE_DISCORD_RPC}>:discord-rpc>
 )
 
 if(APPLE)

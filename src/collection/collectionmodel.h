@@ -1,6 +1,6 @@
 /*
  * Strawberry Music Player
- * Copyright 2018-2024, Jonas Kvinge <jonas@jkvinge.net>
+ * Copyright 2018-2025, Jonas Kvinge <jonas@jkvinge.net>
  *
  * Strawberry is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -129,14 +129,16 @@ class CollectionModel : public SimpleTreeModel<CollectionItem> {
                 show_dividers(true),
                 show_pretty_covers(true),
                 show_various_artists(true),
-                sort_skips_articles(true),
+                sort_skip_articles_for_artists(false),
+                sort_skip_articles_for_albums(false),
                 separate_albums_by_grouping(false) {}
 
     Grouping group_by;
     bool show_dividers;
     bool show_pretty_covers;
     bool show_various_artists;
-    bool sort_skips_articles;
+    bool sort_skip_articles_for_artists;
+    bool sort_skip_articles_for_albums;
     bool separate_albums_by_grouping;
     CollectionFilterOptions filter_options;
   };
@@ -155,7 +157,7 @@ class CollectionModel : public SimpleTreeModel<CollectionItem> {
   int total_artist_count() const { return total_artist_count_; }
   int total_album_count() const { return total_album_count_; }
 
-  quint64 icon_disk_cache_size() { return icon_disk_cache_->cacheSize(); }
+  quint64 icon_disk_cache_size() { return static_cast<quint64>(icon_disk_cache_->cacheSize()); }
 
   const CollectionModel::Grouping GetGroupBy() const { return options_current_.group_by; }
   void SetGroupBy(const CollectionModel::Grouping g, const std::optional<bool> separate_albums_by_grouping = std::optional<bool>());
@@ -176,20 +178,21 @@ class CollectionModel : public SimpleTreeModel<CollectionItem> {
   QMimeData *mimeData(const QModelIndexList &indexes) const override;
 
   // Utility functions for manipulating text
-  static QString DisplayText(const GroupBy group_by, const Song &song);
+  QString DisplayText(const GroupBy group_by, const Song &song);
   static QString TextOrUnknown(const QString &text);
   static QString PrettyYearAlbum(const int year, const QString &album);
   static QString PrettyAlbumDisc(const QString &album, const int disc);
   static QString PrettyYearAlbumDisc(const int year, const QString &album, const int disc);
   static QString PrettyDisc(const int disc);
   static QString PrettyFormat(const Song &song);
-  QString SortText(const GroupBy group_by, const Song &song, const bool sort_skips_articles);
+  QString SortText(const GroupBy group_by, const Song &song, const bool sort_skip_articles_for_artists, const bool sort_skip_articles_for_albums);
   static QString SortText(QString text);
+  static QString SortTextForName(const QString &name, const bool sort_skip_articles);
   static QString SortTextForNumber(const int number);
-  static QString SortTextForArtist(QString artist, const bool skip_articles);
   static QString SortTextForSong(const Song &song);
   static QString SortTextForYear(const int year);
   static QString SortTextForBitrate(const int bitrate);
+  static QString SkipArticles(QString name);
   static bool IsSongTitleDataChanged(const Song &song1, const Song &song2);
   QString ContainerKey(const GroupBy group_by, const Song &song, bool &has_unique_album_identifier) const;
 
@@ -228,7 +231,7 @@ class CollectionModel : public SimpleTreeModel<CollectionItem> {
 
   QVariant data(CollectionItem *item, const int role) const;
 
-  void ScheduleUpdate(const CollectionModelUpdate::Type type, const SongList &songs);
+  void ScheduleUpdate(const CollectionModelUpdate::Type type, const SongList &songs = SongList());
   void ScheduleAddSongs(const SongList &songs);
   void ScheduleUpdateSongs(const SongList &songs);
   void ScheduleRemoveSongs(const SongList &songs);
@@ -259,7 +262,7 @@ class CollectionModel : public SimpleTreeModel<CollectionItem> {
   static qint64 MaximumCacheSize(Settings *s, const char *size_id, const char *size_unit_id, const qint64 cache_size_default);
 
  private Q_SLOTS:
-  void Reload();
+  void ResetInternal();
   void ScheduleReset();
   void ProcessUpdate();
   void LoadSongsFromSqlAsyncFinished();
@@ -278,7 +281,6 @@ class CollectionModel : public SimpleTreeModel<CollectionItem> {
   const SharedPtr<AlbumCoverLoader> albumcover_loader_;
   CollectionDirectoryModel *dir_model_;
   CollectionFilter *filter_;
-  QTimer *timer_reload_;
   QTimer *timer_update_;
 
   QPixmap pixmap_no_cover_;
